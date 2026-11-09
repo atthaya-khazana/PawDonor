@@ -1,0 +1,95 @@
+# PawDonor - Next.js app + PostgreSQL (+ Adminer on the "tools" profile)
+#
+#   cp .env.example .env
+#   docker compose up -d --build                      # app + database
+#   docker compose --profile tools up -d              # ... plus Adminer (DB admin UI)
+#
+# Docker Compose reads the .env file in this folder automatically: the ${...}
+# placeholders below are filled from it, and `env_file` passes it into the db container.
+
+name: pawdonor
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16.4-alpine            # specific version tag, not "latest"
+    container_name: pawdonor-db
+    restart: unless-stopped
+    env_file:
+      - .env                               # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
+    volumes:
+      # Named volume: database files survive `docker compose down` (but not `down -v`).
+      - pawdonor_pgdata:/var/lib/postgresql/data
+      # Schema + dummy data. Runs only when the volume is still empty (first start).
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - pawdonor-net
+    # No "ports:" on purpose - the database is reachable only inside pawdonor-net.
+    healthcheck:
+      # -h 127.0.0.1 forces a TCP check. During first-time initialisation Postgres runs a
+      # temporary server that listens on a unix socket only, so a socket check could report
+      # "healthy" too early. $$ lets the container's shell expand the variable, not Compose.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Next.js application (frontend + backend API in one container)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pawdonor-app:1.0.0
+    container_name: pawdonor-app
+    restart: unless-stopped
+    environment:
+      # The app reaches the database by SERVICE NAME ("db"), resolved by Docker's DNS
+      # on the user-defined network - never by IP address or localhost.
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGDATABASE: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    ports:
+      - "${APP_PORT:-3002}:3000"           # http://localhost:<APP_PORT>
+    depends_on:
+      db:
+        condition: service_healthy         # start the app only after Postgres is ready
+    networks:
+      - pawdonor-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Adminer - web UI for the database. Only starts with:  --profile tools
+  # ---------------------------------------------------------------------------
+  adminer:
+    image: adminer:4.8.1
+    container_name: pawdonor-adminer
+    profiles: ["tools"]
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "127.0.0.1:${ADMINER_PORT:-8080}:8080"   # bound to localhost only
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pawdonor-net
+
+networks:
+  pawdonor-net:                            # user-defined bridge network
+    driver: bridge
+
+volumes:
+  pawdonor_pgdata:                         # named volume for PostgreSQL data

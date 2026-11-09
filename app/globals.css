@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background: #ffbb5c;
+  }
+  body {
+    @apply min-h-screen bg-sunset font-sans text-cocoa antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display font-normal;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-grape;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-tangerine text-white hover:bg-orange-600;
+  }
+  .btn-dark {
+    @apply bg-cocoa text-white hover:bg-cocoa-800;
+  }
+  .btn-ghost {
+    @apply border border-cocoa/20 bg-white text-cocoa hover:bg-cocoa/5;
+  }
+  .btn-danger {
+    @apply border border-red-200 bg-red-50 text-red-700 hover:bg-red-100;
+  }
+  .btn-sm {
+    @apply px-3.5 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-cocoa/20 bg-white px-3.5 py-2.5 text-sm text-cocoa outline-none transition placeholder:text-cocoa/40 focus:border-tangerine focus:ring-2 focus:ring-tangerine/30;
+  }
+  .label {
+    @apply mb-1 block text-xs font-bold uppercase tracking-wide text-cocoa/70;
+  }
+
+  .card {
+    @apply rounded-3xl p-5;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold;
+  }
+  .page-title {
+    @apply text-3xl uppercase leading-tight text-tangerine sm:text-4xl;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Dashboard redesign ("cold-chain ledger")                            */
+/* Everything below is scoped to .dash, so other pages are untouched.  */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+  /* Only repaint the canvas when the dashboard is on screen. */
+  html:has(.dash),
+  body:has(.dash) {
+    background: #e9eee8;
+  }
+}
+
+@layer components {
+  .dash {
+    --ink: #10302a;
+    --ink-soft: #4b635c;
+    --line: #cbd6ce;
+    --sage: #c9dcd0;
+    --plasma: #d6402b;
+    --amber: #e0a030;
+    --moss: #3f7d5f;
+    color: var(--ink);
+  }
+  .dash h1,
+  .dash h2,
+  .dash h3,
+  .dash .dash-fig {
+    font-family: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .dash .dash-fig {
+    line-height: 1;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .dash-soft {
+    color: var(--ink-soft);
+  }
+  .dash-panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+  }
+  .dash-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 0.6rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    border: 1px solid var(--ink);
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .dash-btn-solid {
+    background: var(--ink);
+    color: #fff;
+  }
+  .dash-btn-solid:hover {
+    background: #1b4a41;
+  }
+  .dash-btn-line {
+    background: transparent;
+    color: var(--ink);
+  }
+  .dash-btn-line:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+  .dash :focus-visible {
+    outline: 2px solid var(--plasma);
+    outline-offset: 2px;
+  }
+
+  /* Urgency colour tokens, read by stripe / tag / dot. */
+  .dash [data-u] {
+    --c: var(--moss);
+    --c-text: #2f6b4f;
+  }
+  .dash [data-u='Medium'] {
+    --c: var(--amber);
+    --c-text: #8a5a00;
+  }
+  .dash [data-u='High'] {
+    --c: var(--plasma);
+    --c-text: #b32d1a;
+  }
+  .dash-urgtag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+  .dash-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--c);
+  }
+  .dash-row {
+    position: relative;
+    padding: 1rem 0 1rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .dash-row:last-child {
+    border-bottom: 0;
+  }
+  .dash-row[data-u]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    bottom: 1rem;
+    width: 4px;
+    border-radius: 4px;
+    background: var(--c);
+  }
+
+  /* Stacked bar used for dogs/cats and request status. */
+  .dash-seg {
+    display: flex;
+    gap: 2px;
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--line);
+  }
+  .dash-seg > span {
+    display: block;
+    height: 100%;
+  }
+  .dash-track {
+    height: 0.625rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e4ebe6;
+  }
+  .dash-track > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+  }
+
+  /* The blood bag: fill level = share of donors who are available. */
+  .dash-bag {
+    position: relative;
+    flex: none;
+    width: 3.5rem;
+    height: 5.25rem;
+    overflow: hidden;
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 0.9rem 0.9rem 1.3rem 1.3rem;
+  }
+  .dash-bag::after {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    width: 1.1rem;
+    height: 0.35rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    background: #fff;
+    z-index: 2;
+  }
+  .dash-bag > span {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: var(--fill, 0%);
+    background: var(--plasma);
+    animation: dash-fill 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes dash-fill {
+    from {
+      height: 0%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-bag > span {
+      animation: none;
+    }
+  }
+}
