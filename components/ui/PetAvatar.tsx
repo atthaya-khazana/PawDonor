@@ -7,16 +7,6 @@ const sizes = {
   lg: 'h-28 w-28 text-6xl',
 };
 
-/**
- * One shared dummy photo per species, used when a pet has no photo of its own.
- * Files live in /public/dummy. A species without an entry keeps its emoji.
- * To give dogs a photo too, add:  Dog: '/dummy/dog.jpg'
- */
-const defaultPhotos: Partial<Record<Species, string>> = {
-  Cat: '/dummy/cat.jpg',
-  Dog: '/dummy/dog.jpg',
-};
-
 interface Props {
   photo: string | null;
   species: Species;
@@ -24,17 +14,12 @@ interface Props {
   size?: keyof typeof sizes;
 }
 
-/** Round pet photo. Falls back to the species' dummy photo, then to the species emoji. */
+/** Round pet photo, with a species emoji as the fallback when there is no photo. */
 export function PetAvatar({ photo, species, name, size = 'md' }: Props) {
   const base = `${sizes[size]} shrink-0 rounded-full object-cover ring-2 ring-white`;
   if (photo) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={photo} alt={`Photo of ${name}`} className={base} />;
-  }
-  const fallback = defaultPhotos[species];
-  if (fallback) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={fallback} alt={`${species} avatar`} className={base} />;
   }
   return (
     <span

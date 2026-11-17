@@ -85,7 +85,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 <Link href="/requests?new=1" className="btn btn-dark btn-sm">
                   <Icon name="plus" /> New request
                 </Link>
-                <Link href="/donors?new=1" className="btn btn-dark btn-sm">
+                <Link href="/donors?new=1" className="btn btn-primary btn-sm">
                   <Icon name="plus" /> Register donor
                 </Link>
               </div>

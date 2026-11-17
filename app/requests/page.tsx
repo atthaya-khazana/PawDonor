@@ -3,12 +3,11 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { api, errorMessage } from '@/lib/api-client';
-import { SPECIES, STATUSES, URGENCIES } from '@/lib/constants';
+import { SPECIES, STATUSES, URGENCIES, speciesEmoji } from '@/lib/constants';
 import { formatDate, useDebounce } from '@/lib/hooks';
 import type { DonationRequest, RequestStatus } from '@/lib/types';
 import { BloodChip, UrgencyChip } from '@/components/ui/Badges';
 import { Icon } from '@/components/ui/Icons';
-import { PetAvatar } from '@/components/ui/PetAvatar';
 import { ConfirmDialog, Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { MatchesModal } from '@/components/requests/MatchesModal';
@@ -107,7 +106,9 @@ function RequestsView() {
           <h1 className="page-title">Donation Requests</h1>
           <p className="mt-1 text-sm font-semibold text-cocoa/70">Pets that need blood. Use &ldquo;Find donors&rdquo; to see candidates.</p>
         </div>
-      
+        <button type="button" className="btn btn-primary" onClick={() => setEditing('new')}>
+          <Icon name="plus" /> New request
+        </button>
       </div>
 
       <section aria-label="Filters" className="grid gap-3 rounded-3xl bg-lavender p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
@@ -173,7 +174,7 @@ function RequestsView() {
             <div className="rounded-3xl bg-cream px-6 py-14 text-center">
               <p className="text-5xl" aria-hidden="true">🩸</p>
               <p className="mt-3 font-display text-2xl">No requests found</p>
-              <p className="mt-1 text-sm text-cocoa/70">Try other filters to find a matching request.</p>
+              <p className="mt-1 text-sm text-cocoa/70">Create a request when a pet needs a blood donor.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -183,7 +184,9 @@ function RequestsView() {
                   className={`flex flex-col gap-4 rounded-3xl border-l-8 bg-white p-4 shadow-sm ring-1 ring-cocoa/10 lg:flex-row lg:items-center ${URGENCY_BORDER[r.urgency]}`}
                 >
                   <div className="flex items-center gap-3 lg:w-60">
-                   <PetAvatar photo={null} species={r.species} name={r.pet_name} size="md" />
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lilac text-2xl" aria-hidden="true">
+                      {speciesEmoji(r.species)}
+                    </span>
                     <div className="min-w-0">
                       <h3 className="truncate text-xl leading-tight">{r.pet_name}</h3>
                       <p className="text-xs font-semibold text-cocoa/60">

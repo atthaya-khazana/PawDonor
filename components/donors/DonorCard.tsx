@@ -1,34 +1,28 @@
+import { speciesEmoji } from '@/lib/constants';
 import type { Donor } from '@/lib/types';
 import { AvailabilityChip, BloodChip } from '@/components/ui/Badges';
 import { Icon } from '@/components/ui/Icons';
 
-// `index` is still accepted so the page does not need to change, but cards are all white now.
-export function DonorCard({ donor, onOpen }: { donor: Donor; index?: number; onOpen: () => void }) {
+const TONES = ['bg-lilac/60', 'bg-mango/50', 'bg-orchid/50', 'bg-lime/50'];
+
+export function DonorCard({ donor, index, onOpen }: { donor: Donor; index: number; onOpen: () => void }) {
   return (
     <button
       type="button"
       onClick={onOpen}
-      className={`group flex flex-col overflow-hidden rounded-3xl bg-white p-3 text-left shadow-[0_4px_20px_rgba(70,75,140,0.07)] transition hover:-translate-y-0.5 hover:shadow-lg ${
+      className={`group flex flex-col overflow-hidden rounded-3xl p-3 text-left transition hover:-translate-y-0.5 hover:shadow-lg ${TONES[index % TONES.length]} ${
         donor.is_available ? '' : 'opacity-80'
       }`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-sunset/70">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-white/60">
         {donor.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={donor.photo_url}
-            alt={`Photo of ${donor.pet_name}`}
-            className="absolute inset-0 h-full w-full object-contain p-2"
-          />
+          <img src={donor.photo_url} alt={`Photo of ${donor.pet_name}`} className="h-full w-full object-cover transition group-hover:scale-105" />
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={donor.species === 'Cat' ? '/dummy/cat.jpg' : '/dummy/dog.jpg'}
-            alt={`${donor.species} avatar`}
-            className="absolute inset-0 h-full w-full object-contain p-2"
-          />
+          <div className="flex h-full w-full items-center justify-center text-7xl" aria-hidden="true">
+            {speciesEmoji(donor.species)}
+          </div>
         )}
-
         <span className="absolute left-2 top-2">
           <AvailabilityChip available={donor.is_available} />
         </span>

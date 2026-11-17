@@ -2,11 +2,10 @@ import type { RequestStatus, Species, Urgency } from '@/lib/types';
 import { speciesEmoji } from '@/lib/constants';
 
 export function UrgencyChip({ urgency }: { urgency: Urgency }) {
-  // All three levels use the same solid, bold style; only the hue changes.
   const styles: Record<Urgency, string> = {
     High: 'bg-red-600 text-white',
-    Medium: 'bg-amber-400 text-amber-950',
-    Low: 'bg-emerald-700 text-white',
+    Medium: 'bg-amber-200 text-amber-900',
+    Low: 'bg-emerald-100 text-emerald-800',
   };
   return <span className={`chip ${styles[urgency]}`}>{urgency}</span>;
 }

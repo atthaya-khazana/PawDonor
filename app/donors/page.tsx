@@ -114,7 +114,9 @@ function DonorsView() {
           <h1 className="page-title">Donor Directory</h1>
           <p className="mt-1 text-sm font-semibold text-cocoa/70">Browse pets that are registered as potential blood donors.</p>
         </div>
-        
+        <button type="button" className="btn btn-primary" onClick={() => setEditing('new')}>
+          <Icon name="plus" /> Register donor
+        </button>
       </div>
 
       <section aria-label="Filters" className="grid gap-3 rounded-3xl bg-lavender p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
@@ -190,7 +192,7 @@ function DonorsView() {
             <div className="rounded-3xl bg-cream px-6 py-14 text-center">
               <p className="text-5xl" aria-hidden="true">🐾</p>
               <p className="mt-3 font-display text-2xl">No donors found</p>
-              <p className="mt-1 text-sm text-cocoa/70">Try other filters to find a matching donor.</p>
+              <p className="mt-1 text-sm text-cocoa/70">Try other filters, or register the first matching donor.</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
