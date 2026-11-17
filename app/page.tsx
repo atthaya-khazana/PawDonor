@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { api, errorMessage } from '@/lib/api-client';
-import { speciesEmoji } from '@/lib/constants';
 import { timeAgo } from '@/lib/hooks';
 import type { DonationRequest, Donor, Stats } from '@/lib/types';
 import { AvailabilityChip, BloodChip, UrgencyChip } from '@/components/ui/Badges';
@@ -25,7 +24,7 @@ function SectionHeader({ title, href, linkLabel }: { title: string; href?: strin
 function Segments({ parts, label }: { parts: { value: number; className: string }[]; label: string }) {
   const total = parts.reduce((s, p) => s + p.value, 0) || 1;
   return (
-    <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-white" role="img" aria-label={label}>
+    <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-sunset" role="img" aria-label={label}>
       {parts.map((p, i) => (p.value > 0 ? <span key={i} className={`block h-full ${p.className}`} style={{ width: `${(p.value / total) * 100}%` }} /> : null))}
     </div>
   );
@@ -35,7 +34,7 @@ function BarRow({ label, value, max, barClass, labelWidth }: { label: string; va
   return (
     <li className="grid items-center gap-3 text-xs font-bold" style={{ gridTemplateColumns: `${labelWidth} 1fr 2rem` }}>
       <span className="truncate">{label}</span>
-      <span className="h-3 overflow-hidden rounded-full bg-white">
+      <span className="h-3 overflow-hidden rounded-full bg-sunset">
         <span className={`block h-full rounded-full ${barClass}`} style={{ width: `${(value / max) * 100}%` }} />
       </span>
       <span className="text-right font-display text-sm">{value}</span>
@@ -80,18 +79,14 @@ export default function DashboardPage() {
     load();
   }, [load]);
 
-  // Top 6 blood types, the rest grouped as "Others".
-  const bloodData = (() => {
-    if (!stats) return [];
-    const top = stats.bloodTypes.slice(0, 6).map((b) => ({
-      label: `${speciesEmoji(b.species)} ${b.blood_type}`,
-      value: b.count,
-      other: false,
-    }));
-    const others = stats.bloodTypes.slice(6).reduce((sum, b) => sum + b.count, 0);
-    return others ? [...top, { label: 'Others', value: others, other: true }] : top;
-  })();
-  const maxBlood = Math.max(1, ...bloodData.map((b) => b.value));
+  // Blood types grouped per species (Cats / Dogs), no emoji.
+  const bloodGroups = (['Cat', 'Dog'] as const)
+    .map((sp) => {
+      const items = (stats?.bloodTypes ?? []).filter((b) => b.species === sp);
+      return { species: sp, title: sp === 'Cat' ? 'Cats' : 'Dogs', total: items.reduce((sum, b) => sum + b.count, 0), items };
+    })
+    .filter((g) => g.items.length > 0);
+  const maxBlood = Math.max(1, ...(stats?.bloodTypes.map((b) => b.count) ?? [1]));
   const maxLocation = Math.max(1, ...(stats?.locations.map((l) => l.count) ?? [1]));
 
   const openCount = stats?.openRequests.length ?? 0;
@@ -103,7 +98,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <header>
         <div>
-          <h1 className="page-title">{greeting}, pet lovers 🐾</h1>
+          <h1 className="page-title">{greeting}, pet lovers!</h1>
           <p className="mt-1 text-sm font-semibold text-cocoa/80">
             {stats
               ? `${openCount} ${openCount === 1 ? 'request is' : 'requests are'} waiting for a donor, ${stats.donors.available} ${stats.donors.available === 1 ? 'donor is' : 'donors are'} ready to give.`
@@ -134,7 +129,7 @@ export default function DashboardPage() {
       {stats && (
         <>
           {/* Summary strip */}
-          <div className="card grid grid-cols-1 divide-y divide-cocoa/10 bg-lilac p-0 text-grape md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="card grid grid-cols-1 divide-y divide-cocoa/10 bg-white p-0 text-cocoa md:grid-cols-3 md:divide-x md:divide-y-0">
             <StripCell title="Registered donors">
               <p className="font-display text-5xl leading-none">{stats.donors.total}</p>
               <div className="mt-4">
@@ -154,11 +149,11 @@ export default function DashboardPage() {
             <StripCell title="Ready to donate">
               <div className="flex items-center gap-4">
                 <div
-                  className="relative h-[4.5rem] w-12 shrink-0 overflow-hidden rounded-b-2xl rounded-t-xl border-2 border-cocoa bg-white"
+                  className="relative h-[4.5rem] w-12 shrink-0 overflow-hidden rounded-b-2xl rounded-t-xl border-2 border-cocoa bg-sunset"
                   role="img"
                   aria-label={`${readyPct}% of donors are available`}
                 >
-                  <span className="absolute inset-x-0 bottom-0 bg-tangerine" style={{ height: `${readyPct}%` }} />
+                  <span className="absolute inset-x-0 bottom-0 bg-grape" style={{ height: `${readyPct}%` }} />
                 </div>
                 <div>
                   <p className="font-display text-5xl leading-none">{stats.donors.available}</p>
@@ -189,7 +184,7 @@ export default function DashboardPage() {
 
           {/* Aligned 2x2 grid: every row has two equal-height cards */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <section className="card bg-mango" aria-label="Recent donation requests">
+            <section className="card bg-white" aria-label="Recent donation requests">
               <SectionHeader title="Latest requests" href="/requests" />
               {requests.length === 0 ? (
                 <p className="text-sm font-semibold">No requests yet.</p>
@@ -198,10 +193,8 @@ export default function DashboardPage() {
                   {requests.map((r) => {
                     const candidates = candidatesById.get(r.id);
                     return (
-                      <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-white/50 p-2.5">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-xl" aria-hidden="true">
-                          {speciesEmoji(r.species)}
-                        </span>
+                      <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-sunset/70 p-2.5">
+                        <PetAvatar photo={null} species={r.species} name={r.pet_name} size="sm" />
                         <div className="min-w-0 flex-1 basis-40">
                           <p className="truncate text-sm font-bold">{r.pet_name}</p>
                           <p className="truncate text-xs font-semibold text-cocoa/70">
@@ -223,14 +216,14 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="card bg-lime" aria-label="Recently registered donors">
+            <section className="card bg-white" aria-label="Recently registered donors">
               <SectionHeader title="Newest donors" href="/donors" />
               {donors.length === 0 ? (
                 <p className="text-sm font-semibold">No donors registered yet.</p>
               ) : (
                 <ul className="space-y-2">
                   {donors.map((d) => (
-                    <li key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-white/50 p-2.5">
+                    <li key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-sunset/70 p-2.5">
                       <PetAvatar photo={d.photo_url} species={d.species} name={d.pet_name} size="sm" />
                       <div className="min-w-0 flex-1 basis-32">
                         <p className="truncate text-sm font-bold">{d.pet_name}</p>
@@ -246,27 +239,44 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="card bg-lavender" aria-label="Blood type distribution">
+            <section className="card bg-white" aria-label="Blood type distribution">
               <SectionHeader title="Blood types" />
-              {bloodData.length === 0 ? (
+              {bloodGroups.length === 0 ? (
                 <p className="text-sm font-semibold">No data yet.</p>
               ) : (
-                <ul className="space-y-2.5">
-                  {bloodData.map((b) => (
-                    <BarRow key={b.label} label={b.label} value={b.value} max={maxBlood} barClass={b.other ? 'bg-orchid' : 'bg-grape'} labelWidth="6.5rem" />
+                <div className="space-y-5">
+                  {bloodGroups.map((g) => (
+                    <div key={g.species}>
+                      <p className="mb-2 flex items-baseline justify-between text-xs font-bold uppercase tracking-wide text-cocoa/70">
+                        <span>{g.title}</span>
+                        <span>{g.total} {g.total === 1 ? 'donor' : 'donors'}</span>
+                      </p>
+                      <ul className="space-y-2.5">
+                        {g.items.map((b) => (
+                          <BarRow
+                            key={`${b.species}-${b.blood_type}`}
+                            label={b.blood_type}
+                            value={b.count}
+                            max={maxBlood}
+                            barClass="bg-grape"
+                            labelWidth="6.5rem"
+                          />
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </section>
 
-            <section className="card bg-apricot" aria-label="Donors by location">
+            <section className="card bg-white" aria-label="Donors by location">
               <SectionHeader title="Donors by location" />
               {stats.locations.length === 0 ? (
                 <p className="text-sm font-semibold">No data yet.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {stats.locations.map((l) => (
-                    <BarRow key={l.location} label={l.location} value={l.count} max={maxLocation} barClass="bg-tangerine" labelWidth="6.5rem" />
+                    <BarRow key={l.location} label={l.location} value={l.count} max={maxLocation} barClass="bg-grape" labelWidth="6.5rem" />
                   ))}
                 </ul>
               )}

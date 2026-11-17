@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import '@fontsource/bagel-fat-one/400.css';
-import '@fontsource-variable/space-grotesk';
-import '@fontsource-variable/fraunces';
+import '@fontsource-variable/fredoka';
+import '@fontsource-variable/plus-jakarta-sans';
 import './globals.css';
 import { Shell } from '@/components/Shell';
 

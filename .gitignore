@@ -1,18 +1,26 @@
-# Dependencies
-node_modules/
-
-# Next.js build output
-.next/
-out/
-next-env.d.ts
-*.tsbuildinfo
-
-# Environment secrets
+# Environment
 .env
 .env.*
 !.env.example
 
-# Logs and OS files
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build
+dist/
+build/
+
+# Logs
 *.log
 npm-debug.log*
+
+# OS
 .DS_Store
+
+# IDE
+.vscode/
+.idea/
